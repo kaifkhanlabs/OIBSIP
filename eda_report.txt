@@ -1,0 +1,10 @@
+======================================================================
+NYC AIRBNB EDA REPORT
+======================================================================
+
+Total Listings: 48,510
+Average Price: $140.27
+Median Price: $105.00
+Avg Min Nights: 6.6
+Avg Availability: 112.3
+Avg Reviews: 23.4

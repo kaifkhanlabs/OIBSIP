@@ -2,55 +2,49 @@ import pandas as pd
 import numpy as np
 import os
 
-# Get script directory for relative paths
 script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(script_dir)
+project_root = os.path.abspath(os.path.join(script_dir, os.pardir))
+input_path = os.path.join(project_root, '1_data', 'AB_NYC_2019.csv')
+output_dir = os.path.join(project_root, '3_outputs')
+screenshot_dir = os.path.join(project_root, '4_screenshots')
 
-os.makedirs(os.path.join(project_root, '3_output'), exist_ok=True)
+os.makedirs(output_dir, exist_ok=True)
+os.makedirs(screenshot_dir, exist_ok=True)
 
-df = pd.read_excel(os.path.join(project_root, '1_data/Online Retail.xlsx'))
+df = pd.read_csv(input_path)
 
-print("Original Shape:", df.shape)
-print("\nFirst 5 rows:")
-print(df.head())
-
-print("\n" + "=" * 60)
-print("MISSING VALUES CHECK")
-print("=" * 60)
+print("=" * 70)
+print("INITIAL DATA EXPLORATION")
+print("=" * 70)
+print(f"Shape: {df.shape}")
+print(f"Columns: {df.columns.tolist()}")
+print(f"\nData types:")
+print(df.dtypes)
+print(f"\nMissing values:")
 print(df.isnull().sum())
-
-print("\n" + "=" * 60)
-print("UNIQUE VALUES COUNT")
-print("=" * 60)
-print(df.nunique())
+print(f"\nDuplicate rows: {df.duplicated().sum()}")
 
 df_clean = df.copy()
 
-df_clean = df_clean.dropna(subset=['CustomerID'])
+df_clean['last_review'] = pd.to_datetime(df_clean['last_review'], errors='coerce')
 
-df_clean = df_clean[df_clean['Quantity'] > 0]
-df_clean = df_clean[df_clean['UnitPrice'] > 0]
+df_clean = df_clean.dropna(subset=['name', 'host_name'])
 
-df_clean['InvoiceDate'] = pd.to_datetime(df_clean['InvoiceDate'], format='%m/%d/%Y %H:%M', errors='coerce')
+df_clean['reviews_per_month'] = df_clean['reviews_per_month'].fillna(0)
 
-df_clean = df_clean.dropna(subset=['InvoiceDate'])
+df_clean['last_review'] = df_clean['last_review'].fillna(pd.to_datetime('2019-01-01'))
 
-df_clean = df_clean.drop_duplicates()
-
-df_clean['TotalAmount'] = df_clean['Quantity'] * df_clean['UnitPrice']
-
-print("\n" + "=" * 60)
-print("CLEANED DATA INFO")
-print("=" * 60)
-print("New Shape:", df_clean.shape)
-print("\nMissing Values After Cleaning:")
+print(f"\nMissing values after cleaning:")
 print(df_clean.isnull().sum())
 
-print("\nDate Range:")
-print("Min:", df_clean['InvoiceDate'].min())
-print("Max:", df_clean['InvoiceDate'].max())
+df_clean = df_clean[df_clean['price'] > 0]
+df_clean = df_clean[df_clean['price'] < 1000]
 
-output_path = os.path.join(project_root, '3_output/cleaned_online_retail.csv')
-df_clean.to_csv(output_path, index=False)
+df_clean = df_clean[df_clean['minimum_nights'] < 365]
+df_clean = df_clean[df_clean['availability_365'] <= 365]
 
-print("\nData cleaning complete. File saved to 3_output/cleaned_online_retail.csv")
+print(f"\nShape after cleaning: {df_clean.shape}")
+
+df_clean.to_csv(os.path.join(output_dir, 'cleaned_airbnb.csv'), index=False)
+
+print("\nData cleaning complete. File saved to 3_outputs/cleaned_airbnb.csv")
