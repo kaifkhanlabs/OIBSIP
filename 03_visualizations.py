@@ -1,139 +1,136 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import confusion_matrix
 import os
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(script_dir, os.pardir))
-output_dir = os.path.join(project_root, '3_outputs')
-screenshot_dir = os.path.join(project_root, '4_screenshots')
+root_dir = os.path.abspath(os.path.join(script_dir, '..'))
+output_dir = os.path.join(root_dir, '4_screenshots')
+os.makedirs(output_dir, exist_ok=True)
 
-os.makedirs(screenshot_dir, exist_ok=True)
+input_dir = os.path.join(root_dir, '3_outputs')
+df = pd.read_csv(os.path.join(input_dir, 'cleaned_text.csv'))
+df_pred = pd.read_csv(os.path.join(input_dir, 'predictions.csv'))
 
-df = pd.read_csv(os.path.join(output_dir, 'cleaned_airbnb.csv'))
+def save_plot(name):
+    plt.savefig(os.path.join(output_dir, name), dpi=300, bbox_inches='tight')
 
 plt.style.use('seaborn-v0_8-darkgrid')
 
 print("Generating visualizations...")
 
-plt.figure(figsize=(12, 6))
-group_counts = df['neighbourhood_group'].value_counts()
-colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7']
-bars = plt.bar(group_counts.index, group_counts.values, color=colors, edgecolor='black')
-plt.title('Listings by Neighbourhood Group', fontsize=16, fontweight='bold')
-plt.xlabel('Neighbourhood Group', fontsize=12)
-plt.ylabel('Number of Listings', fontsize=12)
+plt.figure(figsize=(10, 6))
+sentiment_counts = df['sentiment'].value_counts()
+colors = {'positive': '#2ECC71', 'negative': '#E74C3C', 'neutral': '#F1C40F'}
+bars = plt.bar(sentiment_counts.index, sentiment_counts.values, 
+               color=[colors.get(x, '#95A5A6') for x in sentiment_counts.index])
+plt.title('Sentiment Distribution in Dataset', fontsize=16, fontweight='bold')
+plt.xlabel('Sentiment', fontsize=12)
+plt.ylabel('Number of Tweets', fontsize=12)
 for bar in bars:
     height = bar.get_height()
-    plt.text(bar.get_x() + bar.get_width()/2, height + 50, f'{int(height)}', ha='center')
+    plt.text(bar.get_x() + bar.get_width()/2, height + 5, f'{int(height)}', ha='center')
 plt.tight_layout()
-plt.savefig(os.path.join(screenshot_dir, 'listings_by_neighbourhood.png'), dpi=300, bbox_inches='tight')
+save_plot('sentiment_distribution.png')
 plt.close()
-print("✓ listings_by_neighbourhood.png saved")
+print("✓ sentiment_distribution.png saved")
 
 plt.figure(figsize=(12, 6))
-avg_price_group = df.groupby('neighbourhood_group')['price'].mean().sort_values()
-bars = plt.barh(avg_price_group.index, avg_price_group.values, color=['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'])
-plt.title('Average Price by Neighbourhood Group', fontsize=16, fontweight='bold')
-plt.xlabel('Average Price ($)', fontsize=12)
-plt.ylabel('Neighbourhood Group', fontsize=12)
-for bar in bars:
-    width = bar.get_width()
-    plt.text(width + 2, bar.get_y() + bar.get_height()/2, f'${width:.0f}', va='center')
-plt.tight_layout()
-plt.savefig(os.path.join(screenshot_dir, 'avg_price_by_neighbourhood.png'), dpi=300, bbox_inches='tight')
-plt.close()
-print("✓ avg_price_by_neighbourhood.png saved")
+word_count_pos = df[df['sentiment'] == 'positive']['word_count']
+word_count_neg = df[df['sentiment'] == 'negative']['word_count']
+word_count_neu = df[df['sentiment'] == 'neutral']['word_count']
 
-plt.figure(figsize=(10, 8))
-room_counts = df['room_type'].value_counts()
-colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
-plt.pie(room_counts.values, labels=room_counts.index, autopct='%1.1f%%', colors=colors, startangle=90)
-plt.title('Room Type Distribution', fontsize=16, fontweight='bold')
-plt.tight_layout()
-plt.savefig(os.path.join(screenshot_dir, 'room_type_pie.png'), dpi=300, bbox_inches='tight')
-plt.close()
-print("✓ room_type_pie.png saved")
-
-plt.figure(figsize=(12, 6))
-avg_price_room = df.groupby(['neighbourhood_group', 'room_type'])['price'].mean().unstack()
-avg_price_room.plot(kind='bar', figsize=(12, 6), color=['#FF6B6B', '#4ECDC4', '#45B7D1'])
-plt.title('Average Price by Neighbourhood and Room Type', fontsize=16, fontweight='bold')
-plt.xlabel('Neighbourhood Group', fontsize=12)
-plt.ylabel('Average Price ($)', fontsize=12)
-plt.xticks(rotation=0)
-plt.legend(title='Room Type')
-plt.grid(axis='y', alpha=0.3)
-plt.tight_layout()
-plt.savefig(os.path.join(screenshot_dir, 'price_neighbourhood_room.png'), dpi=300, bbox_inches='tight')
-plt.close()
-print("✓ price_neighbourhood_room.png saved")
-
-plt.figure(figsize=(12, 6))
-df_sorted = df.sort_values('price', ascending=False)
-top_10 = df_sorted.head(10)
-bars = plt.barh(top_10['name'].str[:30], top_10['price'], color='#FF6B6B', edgecolor='black')
-plt.title('Top 10 Most Expensive Listings', fontsize=16, fontweight='bold')
-plt.xlabel('Price ($)', fontsize=12)
-plt.ylabel('Listing Name', fontsize=12)
-for bar in bars:
-    width = bar.get_width()
-    plt.text(width + 5, bar.get_y() + bar.get_height()/2, f'${width:.0f}', va='center')
-plt.tight_layout()
-plt.savefig(os.path.join(screenshot_dir, 'top_10_expensive.png'), dpi=300, bbox_inches='tight')
-plt.close()
-print("✓ top_10_expensive.png saved")
-
-plt.figure(figsize=(12, 6))
-plt.hist(df['price'], bins=50, color='#4ECDC4', edgecolor='black', alpha=0.7)
-plt.title('Price Distribution', fontsize=16, fontweight='bold')
-plt.xlabel('Price ($)', fontsize=12)
+plt.hist(word_count_pos, bins=20, alpha=0.5, label='Positive', color='#2ECC71', edgecolor='black')
+plt.hist(word_count_neg, bins=20, alpha=0.5, label='Negative', color='#E74C3C', edgecolor='black')
+plt.hist(word_count_neu, bins=20, alpha=0.5, label='Neutral', color='#F1C40F', edgecolor='black')
+plt.title('Word Count Distribution by Sentiment', fontsize=16, fontweight='bold')
+plt.xlabel('Number of Words', fontsize=12)
 plt.ylabel('Frequency', fontsize=12)
-plt.xlim(0, 500)
-plt.axvline(df['price'].mean(), color='red', linestyle='dashed', label=f'Mean: ${df["price"].mean():.0f}')
-plt.axvline(df['price'].median(), color='blue', linestyle='dashed', label=f'Median: ${df["price"].median():.0f}')
 plt.legend()
 plt.grid(axis='y', alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(screenshot_dir, 'price_distribution.png'), dpi=300, bbox_inches='tight')
+save_plot('word_count_distribution.png')
 plt.close()
-print("✓ price_distribution.png saved")
+print("✓ word_count_distribution.png saved")
 
-plt.figure(figsize=(12, 6))
-avg_reviews_group = df.groupby('neighbourhood_group')['number_of_reviews'].mean().sort_values()
-bars = plt.bar(avg_reviews_group.index, avg_reviews_group.values, color=['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'])
-plt.title('Average Reviews by Neighbourhood Group', fontsize=16, fontweight='bold')
-plt.xlabel('Neighbourhood Group', fontsize=12)
-plt.ylabel('Average Number of Reviews', fontsize=12)
+plt.figure(figsize=(8, 6))
+cm = confusion_matrix(df_pred['actual'], df_pred['predicted'])
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+            xticklabels=['Negative', 'Neutral', 'Positive'],
+            yticklabels=['Negative', 'Neutral', 'Positive'])
+plt.title('Confusion Matrix', fontsize=16, fontweight='bold')
+plt.xlabel('Predicted', fontsize=12)
+plt.ylabel('Actual', fontsize=12)
+plt.tight_layout()
+save_plot('confusion_matrix.png')
+plt.close()
+print("✓ confusion_matrix.png saved")
+
+plt.figure(figsize=(10, 6))
+sentiment_pred = df_pred['predicted'].value_counts()
+colors = {'positive': '#2ECC71', 'negative': '#E74C3C', 'neutral': '#F1C40F'}
+bars = plt.bar(sentiment_pred.index, sentiment_pred.values,
+               color=[colors.get(x, '#95A5A6') for x in sentiment_pred.index])
+plt.title('Predicted Sentiment Distribution (Test Set)', fontsize=16, fontweight='bold')
+plt.xlabel('Sentiment', fontsize=12)
+plt.ylabel('Number of Predictions', fontsize=12)
 for bar in bars:
     height = bar.get_height()
-    plt.text(bar.get_x() + bar.get_width()/2, height + 0.5, f'{height:.1f}', ha='center')
+    plt.text(bar.get_x() + bar.get_width()/2, height + 1, f'{int(height)}', ha='center')
 plt.tight_layout()
-plt.savefig(os.path.join(screenshot_dir, 'avg_reviews_neighbourhood.png'), dpi=300, bbox_inches='tight')
+save_plot('predicted_distribution.png')
 plt.close()
-print("✓ avg_reviews_neighbourhood.png saved")
+print("✓ predicted_distribution.png saved")
 
 plt.figure(figsize=(12, 6))
-availability_by_group = df.groupby('neighbourhood_group')['availability_365'].mean().sort_values()
-bars = plt.bar(availability_by_group.index, availability_by_group.values, color=['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'])
-plt.title('Average Availability by Neighbourhood Group', fontsize=16, fontweight='bold')
-plt.xlabel('Neighbourhood Group', fontsize=12)
-plt.ylabel('Average Availability (days/year)', fontsize=12)
-for bar in bars:
-    height = bar.get_height()
-    plt.text(bar.get_x() + bar.get_width()/2, height + 2, f'{height:.0f}', ha='center')
+df['length_category'] = pd.cut(df['word_count'], bins=[0, 3, 6, 20], labels=['Short (1-3)', 'Medium (4-6)', 'Long (7+)'])
+length_sentiment = pd.crosstab(df['length_category'], df['sentiment'], normalize='index') * 100
+length_sentiment.plot(kind='bar', figsize=(12, 6), color=['#E74C3C', '#F1C40F', '#2ECC71'])
+plt.title('Sentiment Distribution by Tweet Length', fontsize=16, fontweight='bold')
+plt.xlabel('Tweet Length', fontsize=12)
+plt.ylabel('Percentage (%)', fontsize=12)
+plt.xticks(rotation=0)
+plt.legend(title='Sentiment')
+plt.grid(axis='y', alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(screenshot_dir, 'avg_availability_neighbourhood.png'), dpi=300, bbox_inches='tight')
+save_plot('len_sentiment.png')
 plt.close()
-print("✓ avg_availability_neighbourhood.png saved")
+print("✓ len_sentiment.png saved")
 
-plt.figure(figsize=(10, 8))
-correlation = df[['price', 'minimum_nights', 'number_of_reviews', 'reviews_per_month', 'calculated_host_listings_count', 'availability_365']].corr()
-sns.heatmap(correlation, annot=True, cmap='coolwarm', center=0, fmt='.2f', square=True)
-plt.title('Correlation Heatmap', fontsize=16, fontweight='bold')
+def get_top_words(vectorizer, model, sentiment, n=10):
+    class_idx = {'positive': 2, 'negative': 0, 'neutral': 1}[sentiment]
+    feature_names = vectorizer.get_feature_names_out()
+    coeffs = model.feature_log_prob_[class_idx]
+    top_indices = np.argsort(coeffs)[-n:][::-1]
+    return [(feature_names[i], coeffs[i]) for i in top_indices]
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
+X = df['cleaned_text']
+y = df['sentiment']
+mask = X.notna() & y.notna()
+X = X[mask].fillna('')
+y = y[mask]
+vectorizer = CountVectorizer(max_features=5000)
+X_vec = vectorizer.fit_transform(X)
+model = MultinomialNB()
+model.fit(X_vec, y)
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+for i, sentiment in enumerate(['negative', 'neutral', 'positive']):
+    top_words = get_top_words(vectorizer, model, sentiment, 10)
+    words, scores = zip(*top_words)
+    color = '#E74C3C' if sentiment == 'negative' else '#F1C40F' if sentiment == 'neutral' else '#2ECC71'
+    axes[i].barh(words, scores, color=color)
+    axes[i].set_title(f'Top Words - {sentiment.capitalize()}', fontsize=12, fontweight='bold')
+    axes[i].set_xlabel('Log Probability')
 plt.tight_layout()
-plt.savefig(os.path.join(screenshot_dir, 'correlation_heatmap.png'), dpi=300, bbox_inches='tight')
+save_plot('top_words.png')
 plt.close()
-print("✓ correlation_heatmap.png saved")
+print("✓ top_words.png saved")
 
 print("\nAll visualizations saved to 4_screenshots/")

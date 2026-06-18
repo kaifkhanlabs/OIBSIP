@@ -1,69 +1,60 @@
-# Task 3: NYC Airbnb Data Analysis
+# Task 4: Sentiment Analysis on Twitter Data
 
 ## What is this project
-
-Analyzed New York City Airbnb data to understand pricing trends, neighborhood distribution, and room type popularity.
+Built a sentiment analysis model to classify tweets about Indian politics as positive, negative, or neutral using Machine Learning.
 
 ## Dataset
-
-- Total rows: 48,895 (after cleaning)
-- Columns: 16
-- Key features: id, name, host_id, host_name, neighbourhood_group, neighbourhood, latitude, longitude, room_type, price, minimum_nights, number_of_reviews, last_review, reviews_per_month, calculated_host_listings_count, availability_365
+- Twitter data with political tweets
+- Total tweets: ~16,000+
+- Labels: -1 (Negative), 0 (Neutral), 1 (Positive)
 
 ## What I did
 
-1. Data cleaning
-   - Converted last_review to datetime
-   - Filled missing reviews_per_month with 0
-   - Filled missing last_review with default date
-   - Removed rows with missing name or host_name
-   - Removed price outliers (>1000)
-   - Removed minimum_nights outliers (>365)
+1. Data preprocessing
+   - Converted text to lowercase
+   - Removed special characters and numbers
+   - Removed extra spaces
+   - Added word count and character count features
 
-2. Analysis
-   - Calculated average price, median price
-   - Analyzed price by neighborhood group
-   - Analyzed price by room type
-   - Found top neighborhoods and hosts
+2. Model Building
+   - Used CountVectorizer for text features
+   - Trained Multinomial Naive Bayes classifier
+   - Split data: 80% train, 20% test
 
-3. Visualizations
-   - 8 charts showing key insights
+3. Results
+   - Model Accuracy: ~75%
+   - Precision and Recall scores calculated
 
-## Key Findings
-
-1. Manhattan has the highest average price ($196) and highest number of listings
-2. Entire home/apt is the most common room type (52%)
-3. Average price across NYC is $152
-4. Most listings have high availability (avg 113 days/year)
-5. Weak correlation between price and reviews
+4. Visualizations
+   - Sentiment distribution
+   - Word count by sentiment
+   - Confusion matrix
+   - Top words per sentiment
 
 ## Tools Used
-
 - Python
 - Pandas, NumPy
+- Scikit-learn
 - Matplotlib, Seaborn
 
 ## How to run
 
-1. Run 01_data_cleaning.py
-2. Run 02_eda_analysis.py
+1. Run 01_data_preprocessing.py
+2. Run 02_model_training.py
 3. Run 03_visualizations.py
 
 ## Output
-
-- cleaned_airbnb.csv
-- eda_report.txt
-- summary_stats.csv
-- 8 visualizations in 4_screenshots
+- cleaned_text.csv
+- predictions.csv
+- model_accuracy.txt
+- 6 visualizations in 4_screenshots
 
 ## Screenshots
 
-![Listings by Neighbourhood](4_screenshots/listings_by_neighbourhood.png)
-![Avg Price by Neighbourhood](4_screenshots/avg_price_by_neighbourhood.png)
-![Room Type Distribution](4_screenshots/room_type_pie.png)
-![Price Distribution](4_screenshots/price_distribution.png)
+![Sentiment Distribution](4_screenshots/sentiment_distribution.png)
+![Confusion Matrix](4_screenshots/confusion_matrix.png)
+![Top Words](4_screenshots/top_words.png)
 
 ## Submitted To
-
 Oasis Infobyte - Data Analytics Internship
 June 2026
