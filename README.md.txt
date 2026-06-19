@@ -1,35 +1,34 @@
-# Task 4: Sentiment Analysis on Twitter Data
+# Task 5: Credit Card Fraud Detection
 
 ## What is this project
-Built a sentiment analysis model to classify tweets about Indian politics as positive, negative, or neutral using Machine Learning.
+Built a machine learning model to detect fraudulent credit card transactions using classification algorithms.
 
 ## Dataset
-- Twitter data with political tweets
-- Total tweets: ~16,000+
-- Labels: -1 (Negative), 0 (Neutral), 1 (Positive)
+- 100 transactions
+- Features: amount, transaction_type, merchant_category, time_of_day, day_of_week, location, device_type, previous_transactions, avg_transaction_amount, transaction_frequency
+- Target: is_fraud (0 = Legit, 1 = Fraud)
 
 ## What I did
 
-1. Data preprocessing
-   - Converted text to lowercase
-   - Removed special characters and numbers
-   - Removed extra spaces
-   - Added word count and character count features
+1. Data Exploration
+   - Checked fraud distribution (20% fraud, 80% legit)
+   - Analyzed patterns by category, device, time
 
 2. Model Building
-   - Used CountVectorizer for text features
-   - Trained Multinomial Naive Bayes classifier
-   - Split data: 80% train, 20% test
+   - Tried 3 models: Logistic Regression, Decision Tree, Random Forest
+   - Random Forest performed best
 
 3. Results
-   - Model Accuracy: ~75%
-   - Precision and Recall scores calculated
+   - Accuracy: ~95%
+   - Precision: ~95%
+   - Recall: ~95%
+   - F1-Score: ~95%
 
-4. Visualizations
-   - Sentiment distribution
-   - Word count by sentiment
-   - Confusion matrix
-   - Top words per sentiment
+4. Key Insights
+   - Electronics and Luxury categories have highest fraud
+   - Night transactions are more risky
+   - Desktop devices show more fraud patterns
+   - High amount transactions are suspicious
 
 ## Tools Used
 - Python
@@ -39,21 +38,22 @@ Built a sentiment analysis model to classify tweets about Indian politics as pos
 
 ## How to run
 
-1. Run 01_data_preprocessing.py
+1. Run 01_data_exploration.py
 2. Run 02_model_training.py
 3. Run 03_visualizations.py
 
 ## Output
-- cleaned_text.csv
+- fraud_data_clean.csv
 - predictions.csv
-- model_accuracy.txt
-- 6 visualizations in 4_screenshots
+- model_results.txt
+- 8 visualizations in 4_screenshots
 
 ## Screenshots
 
-![Sentiment Distribution](4_screenshots/sentiment_distribution.png)
+![Fraud Distribution](4_screenshots/fraud_distribution.png)
+![Fraud by Category](4_screenshots/fraud_by_category.png)
 ![Confusion Matrix](4_screenshots/confusion_matrix.png)
-![Top Words](4_screenshots/top_words.png)
+![Feature Importance](4_screenshots/feature_importance.png)
 
 ## Submitted To
 Oasis Infobyte - Data Analytics Internship
